@@ -1,0 +1,214 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  ORGANISER
+  ADMIN
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+}
+
+enum SeatStatus {
+  AVAILABLE
+  SELECTED
+  HELD
+  BOOKED
+}
+
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum OfferStatus {
+  ACTIVE
+  ACCEPTED
+  EXPIRED
+  DECLINED
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  role         Role        @default(CUSTOMER)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  bookings     Booking[]
+  seatHolds    SeatHold[]
+  waitlists    Waitlist[]
+  events       Event[]
+}
+
+model Venue {
+  id           String      @id @default(uuid())
+  name         String
+  location     String
+  address      String
+  rowsCount    Int
+  seatsPerRow  Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  venueSeats   VenueSeat[]
+  events       Event[]
+}
+
+model VenueSeat {
+  id          String      @id @default(uuid())
+  venueId     String
+  venue       Venue       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  rowName     String
+  seatNumber  Int
+  category    String      // "Premium", "Standard", "Economy"
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  eventSeats  EventSeat[]
+
+  @@unique([venueId, rowName, seatNumber])
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  title       String
+  description String
+  imageUrl    String
+  date        String
+  time        String
+  venueId     String
+  venue       Venue       @relation(fields: [venueId], references: [id])
+  organiserId String
+  organiser   User        @relation(fields: [organiserId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  eventSeats  EventSeat[]
+  bookings    Booking[]
+  waitlists   Waitlist[]
+  categories  TicketCategory[]
+}
+
+model TicketCategory {
+  id          String      @id @default(uuid())
+  eventId     String
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String      // e.g. "Premium", "Standard", "Economy"
+  price       Float
+  totalSeats  Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  eventSeats  EventSeat[]
+  waitlists   Waitlist[]
+}
+
+model EventSeat {
+  id          String         @id @default(uuid())
+  eventId     String
+  event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  venueSeatId String
+  venueSeat   VenueSeat      @relation(fields: [venueSeatId], references: [id])
+  categoryId  String
+  category    TicketCategory @relation(fields: [categoryId], references: [id])
+  status      SeatStatus     @default(AVAILABLE)
+  price       Float
+  rowName     String
+  seatNumber  Int
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  seatHolds   SeatHold[]
+  bookingSeats BookingSeat[]
+  waitlistOffers WaitlistOffer[]
+}
+
+model SeatHold {
+  id          String      @id @default(uuid())
+  customerId  String
+  customer    User        @relation(fields: [customerId], references: [id])
+  eventId     String
+  eventSeatId String      @unique
+  eventSeat   EventSeat   @relation(fields: [eventSeatId], references: [id], onDelete: Cascade)
+  heldAt      DateTime    @default(now())
+  expiresAt   DateTime
+  status      String      @default("ACTIVE") // "ACTIVE", "EXPIRED", "RELEASED"
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Booking {
+  id               String        @id @default(uuid())
+  bookingReference String        @unique
+  customerId       String
+  customer         User          @relation(fields: [customerId], references: [id])
+  eventId          String
+  event            Event         @relation(fields: [eventId], references: [id])
+  totalAmount      Float
+  status           BookingStatus @default(CONFIRMED)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  bookingSeats     BookingSeat[]
+}
+
+model BookingSeat {
+  id          String      @id @default(uuid())
+  bookingId   String
+  booking     Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  eventSeatId String
+  eventSeat   EventSeat   @relation(fields: [eventSeatId], references: [id])
+  price       Float
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Waitlist {
+  id            String         @id @default(uuid())
+  customerId    String
+  customer      User           @relation(fields: [customerId], references: [id])
+  eventId       String
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      TicketCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  joinedAt      DateTime       @default(now())
+  status        WaitlistStatus @default(WAITING)
+  queuePosition Int
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  offers        WaitlistOffer[]
+}
+
+model WaitlistOffer {
+  id          String      @id @default(uuid())
+  waitlistId  String
+  waitlist    Waitlist    @relation(fields: [waitlistId], references: [id], onDelete: Cascade)
+  eventSeatId String
+  eventSeat   EventSeat   @relation(fields: [eventSeatId], references: [id])
+  offeredAt   DateTime    @default(now())
+  expiresAt   DateTime
+  status      OfferStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model EmailLog {
+  id        String   @id @default(uuid())
+  recipient String
+  subject   String
+  body      String
+  status    String   // "SENT", "FAILED"
+  sentAt    DateTime @default(now())
+}

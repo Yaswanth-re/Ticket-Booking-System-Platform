@@ -1,69 +1,151 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import React from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function RoleSelectionPage() {
+  const router = useRouter();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+    <div style={outerContainerStyle}>
+      <div style={innerContainerStyle}>
+        <header style={headerStyle}>
+          <h1 style={titleStyle}>Ticket<span style={{ color: 'var(--accent)' }}>Hold</span></h1>
+          <p style={subtitleStyle}>Welcome to Ticket Booking Platform. Choose how you want to continue.</p>
+        </header>
+
+        <div style={cardsGridStyle}>
+          {/* Card 1: Customer */}
+          <div style={cardStyle}>
+            <div style={iconContainerStyle}>🎟️</div>
+            <h2 style={cardTitleStyle}>Customer</h2>
+            <p style={cardDescStyle}>Discover events, select seats from visual maps, and book tickets instantly.</p>
+            <button
+              onClick={() => router.push('/customer/login')}
+              className="btn btn-primary"
+              style={btnStyle}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
+              Continue as Customer
+            </button>
+          </div>
+
+          {/* Card 2: Organiser */}
+          <div style={cardStyle}>
+            <div style={iconContainerStyle}>💼</div>
+            <h2 style={cardTitleStyle}>Organiser</h2>
+            <p style={cardDescStyle}>Host events, configure categories, set prices, and track live booking stats.</p>
+            <button
+              onClick={() => router.push('/organiser/login')}
+              className="btn btn-primary"
+              style={{ ...btnStyle, background: 'var(--primary-gradient)' }}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Continue as Organiser
+            </button>
+          </div>
+
+          {/* Card 3: Admin */}
+          <div style={cardStyle}>
+            <div style={iconContainerStyle}>⚙️</div>
+            <h2 style={cardTitleStyle}>Admin</h2>
+            <p style={cardDescStyle}>Manage system users, build venue seat layouts, and monitor global sales.</p>
+            <button
+              onClick={() => router.push('/admin/login')}
+              className="btn btn-secondary"
+              style={btnStyle}
+            >
+              Admin Login
+            </button>
+          </div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
+
+// Styles
+const outerContainerStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '100vh',
+  background: 'radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, rgba(10, 12, 16, 1) 80%)',
+  padding: '40px 20px',
+};
+
+const innerContainerStyle = {
+  maxWidth: '960px',
+  width: '100%',
+  textAlign: 'center' as const,
+};
+
+const headerStyle = {
+  marginBottom: '50px',
+};
+
+const titleStyle = {
+  fontSize: '48px',
+  fontWeight: 900,
+  letterSpacing: '-0.02em',
+  marginBottom: '12px',
+};
+
+const subtitleStyle = {
+  fontSize: '16px',
+  color: 'var(--text-muted)',
+  maxWidth: '500px',
+  margin: '0 auto',
+};
+
+const cardsGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '30px',
+  marginTop: '20px',
+};
+
+const cardStyle = {
+  backgroundColor: 'var(--bg-card)',
+  border: '1px solid var(--border-color)',
+  borderRadius: 'var(--radius-lg)',
+  padding: '40px 24px',
+  display: 'flex',
+  flexDirection: 'column' as const,
+  alignItems: 'center',
+  transition: 'transform 0.2s ease, border-color 0.2s ease',
+  boxShadow: 'var(--shadow-md)',
+};
+
+const iconContainerStyle = {
+  fontSize: '44px',
+  marginBottom: '20px',
+  backgroundColor: 'var(--bg-input)',
+  width: '80px',
+  height: '80px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid var(--border-color)',
+};
+
+const cardTitleStyle = {
+  fontSize: '22px',
+  fontWeight: 800,
+  color: '#fff',
+  marginBottom: '10px',
+};
+
+const cardDescStyle = {
+  fontSize: '14px',
+  color: 'var(--text-muted)',
+  marginBottom: '30px',
+  lineHeight: 1.5,
+  flex: 1,
+};
+
+const btnStyle = {
+  width: '100%',
+  padding: '12px',
+  fontSize: '14px',
+  fontWeight: 700,
+};
